@@ -35,6 +35,39 @@ final class WorkspaceUITests: XCTestCase {
             ).firstMatch
     }
 
+    func testServerHoverShowsNamesOnTheRightWithoutChangingSelection() {
+        launchApp()
+        defer { app.terminate() }
+        openDemo()
+        let editor = app.textViews["chat.editor"]
+        editor.click()
+        editor.typeText("Keep focus")
+        let atelier = server("L’Atelier")
+        atelier.hover()
+        let tooltip = app.staticTexts["server.tooltip"]
+        XCTAssertTrue(tooltip.waitForExistence(timeout: 1))
+        XCTAssertEqual((tooltip.value as? String) ?? tooltip.label, "L’Atelier")
+        XCTAssertGreaterThanOrEqual(tooltip.frame.minX, atelier.frame.maxX)
+        attachScreenshot("server-tooltip-light")
+        app.typeText(" while hovering")
+        XCTAssertEqual(editor.value as? String, "Keep focus while hovering")
+        let rust = server("Rust & Friends")
+        rust.hover()
+        XCTAssertTrue(app.staticTexts.matching(
+            NSPredicate(format: "identifier == %@ AND (label == %@ OR value == %@)",
+                        "server.tooltip", "Rust & Friends", "Rust & Friends")
+        ).firstMatch.waitForExistence(timeout: 1))
+        XCTAssertTrue(channel("général").exists)
+        editor.hover()
+        XCTAssertTrue(tooltip.waitForNonExistence(timeout: 1))
+        rust.click()
+        XCTAssertTrue(channel("discussion").waitForExistence(timeout: 3))
+        app.typeKey("s", modifierFlags: [.command, .control])
+        XCTAssertTrue(tooltip.waitForNonExistence(timeout: 1))
+        app.typeKey("s", modifierFlags: [.command, .control])
+        XCTAssertTrue(server("Rust & Friends").waitForExistence(timeout: 3))
+    }
+
     func testNativeSidebarAndInspectorToggleIndependently() {
         launchApp()
         defer { app.terminate() }
@@ -54,6 +87,18 @@ final class WorkspaceUITests: XCTestCase {
         app.checkBoxes["workspace.members-toggle"].click()
         XCTAssertTrue(app.buttons["member.alex"].waitForExistence(timeout: 3))
         XCTAssertTrue(app.checkBoxes["workspace.sidebar-toggle"].exists)
+    }
+
+    func testDarkServerHoverShowsName() {
+        launchApp(appearance: "dark")
+        defer { app.terminate() }
+        openDemo()
+        server("L’Atelier").hover()
+        let tooltip = app.staticTexts["server.tooltip"]
+        XCTAssertTrue(tooltip.waitForExistence(timeout: 1))
+        attachScreenshot("server-tooltip-dark")
+        app.textViews["chat.editor"].hover()
+        XCTAssertTrue(tooltip.waitForNonExistence(timeout: 1))
     }
 
     func testNavigationDraftKeyboardSendCopyDeleteAndProfile() {

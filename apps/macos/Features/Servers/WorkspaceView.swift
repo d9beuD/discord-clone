@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 struct WorkspaceView: View {
@@ -39,7 +40,7 @@ struct ServerSidebar: View {
                     .padding(.vertical, 4)
                     .tag(server.id)
                     .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
-                    .help(server.name)
+                    .background(ServerTooltip(name: server.name))
                     .accessibilityLabel(server.name)
                     .accessibilityIdentifier("server.\(server.id)")
             }
@@ -62,5 +63,81 @@ struct ServerSidebar: View {
                     .help("Votre profil")
             }
         }
+    }
+}
+
+private struct ServerTooltip: NSViewRepresentable {
+    let name: String
+
+    func makeNSView(context: Context) -> ServerTooltipAnchor { ServerTooltipAnchor() }
+    func updateNSView(_ view: ServerTooltipAnchor, context: Context) { view.name = name }
+    static func dismantleNSView(_ view: ServerTooltipAnchor, coordinator: ()) { view.hideTooltip() }
+}
+
+private struct ServerTooltipBubble: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path(roundedRect: CGRect(x: rect.minX + 7, y: rect.minY,
+            width: rect.width - 7, height: rect.height), cornerRadius: 8)
+        path.move(to: CGPoint(x: rect.minX + 7, y: rect.midY - 5))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.midY))
+        path.addLine(to: CGPoint(x: rect.minX + 7, y: rect.midY + 5))
+        path.closeSubpath()
+        return path
+    }
+}
+
+private final class ServerTooltipAnchor: NSView {
+    var name = ""
+    private var tooltip: NSPanel?
+
+    override func hitTest(_ point: NSPoint) -> NSView? { nil }
+
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        trackingAreas.forEach(removeTrackingArea)
+        addTrackingArea(NSTrackingArea(rect: .zero,
+            options: [.mouseEnteredAndExited, .activeInKeyWindow, .inVisibleRect], owner: self))
+    }
+
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        hideTooltip()
+    }
+
+    override func mouseEntered(with event: NSEvent) {
+        guard tooltip == nil, let window, window.isKeyWindow else { return }
+        let content = NSHostingView(rootView: Text(name)
+            .font(.callout)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .padding(.leading, 7)
+            .background(.regularMaterial, in: ServerTooltipBubble())
+            .fixedSize()
+            .accessibilityIdentifier("server.tooltip"))
+        let size = content.fittingSize
+        let anchor = window.convertToScreen(convert(bounds, to: nil))
+        let panel = NSPanel(contentRect: NSRect(x: anchor.maxX + 8, y: anchor.midY - size.height / 2,
+            width: size.width, height: size.height), styleMask: [.borderless, .nonactivatingPanel],
+            backing: .buffered, defer: false)
+        panel.backgroundColor = .clear
+        panel.isReleasedWhenClosed = false
+        panel.isOpaque = false
+        panel.hasShadow = true
+        panel.ignoresMouseEvents = true
+        panel.hidesOnDeactivate = true
+        panel.contentView = content
+        panel.appearance = window.effectiveAppearance
+        window.addChildWindow(panel, ordered: .above)
+        panel.orderFront(nil)
+        tooltip = panel
+    }
+
+    override func mouseExited(with event: NSEvent) { hideTooltip() }
+
+    func hideTooltip() {
+        guard let tooltip else { return }
+        tooltip.parent?.removeChildWindow(tooltip)
+        tooltip.close()
+        self.tooltip = nil
     }
 }
