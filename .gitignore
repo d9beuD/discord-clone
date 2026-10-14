@@ -1,0 +1,7 @@
+/target/
+/.build/
+/apps/macos/Generated/
+**/xcuserdata/
+*.xcuserstate
+.DS_Store
+/.unlazy/
