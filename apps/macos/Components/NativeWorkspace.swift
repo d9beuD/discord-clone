@@ -78,7 +78,7 @@ final class WorkspaceSplitController: NSSplitViewController, NSToolbarDelegate {
 
     func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
         [Self.sidebarItem, .sidebarTrackingSeparator, .flexibleSpace, Self.demoItem,
-         .flexibleSpace, .inspectorTrackingSeparator, Self.membersItem, Self.settingsItem]
+         .flexibleSpace, .inspectorTrackingSeparator, Self.membersItem, .flexibleSpace, Self.settingsItem]
     }
 
     func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
@@ -95,10 +95,11 @@ final class WorkspaceSplitController: NSSplitViewController, NSToolbarDelegate {
         if id == Self.sidebarItem || id == Self.membersItem {
             let sidebar = id == Self.sidebarItem
             item.label = sidebar ? "Barre latérale" : "Membres"
-            let button = NSButton(image: NSImage(systemSymbolName: sidebar ? "sidebar.left" : "sidebar.right",
+            let button = NSButton(image: NSImage(systemSymbolName: sidebar ? "sidebar.left" : "person.2.fill",
                                                 accessibilityDescription: item.label)!,
                                   target: self, action: sidebar ? #selector(toggleSidebar(_:)) : #selector(toggleInspector(_:)))
             button.bezelStyle = .toolbar
+            if !sidebar { button.symbolConfiguration = .init(pointSize: 12, weight: .regular) }
             button.setButtonType(.toggle)
             button.setAccessibilityIdentifier(id.rawValue)
             item.autovalidates = false
@@ -115,7 +116,7 @@ final class WorkspaceSplitController: NSSplitViewController, NSToolbarDelegate {
             item.label = "Paramètres"
             let button = NSButton(image: NSImage(systemSymbolName: "gearshape", accessibilityDescription: "Paramètres")!,
                                   target: self, action: #selector(showSettings))
-            button.isBordered = false
+            button.bezelStyle = .toolbar
             button.setAccessibilityIdentifier("workspace.settings")
             item.view = button
         }
