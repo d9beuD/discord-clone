@@ -25,12 +25,13 @@ public sealed partial class WorkspaceView : UserControl
 
     /// The WinUI 3 markup compiler refuses comma-separated VirtualKeyModifiers text, so the
     /// Ctrl+Alt+S and Ctrl+Shift+M combinations from the macOS menu are assembled in code.
+    /// Alt is spelled Menu: Windows.System.VirtualKeyModifiers has None/Control/Menu/Shift/Windows.
     private void AddAccelerators()
     {
         SidebarToggle.KeyboardAccelerators.Add(new KeyboardAccelerator
         {
             Key = VirtualKey.S,
-            Modifiers = VirtualKeyModifiers.Control | VirtualKeyModifiers.Alt,
+            Modifiers = VirtualKeyModifiers.Control | VirtualKeyModifiers.Menu,
         });
         MembersToggle.KeyboardAccelerators.Add(new KeyboardAccelerator
         {

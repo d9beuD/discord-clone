@@ -4,6 +4,7 @@ using DiscordClone.Windows.Presentation;
 using DiscordClone.Windows.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Windows.ApplicationModel.DataTransfer;
 
 namespace DiscordClone.Windows.Views;
 
@@ -149,9 +150,10 @@ public sealed partial class CommunityManagementView : UserControl
         body.Children.Add(editor);
         var expander = new Expander { Header = channel.Name, Content = body };
         var loaded = false;
-        expander.Expanded += async (_, _) =>
+        // WinUI 3's Expander exposes no Expanded event, so lazy loading watches IsExpanded.
+        expander.RegisterPropertyChangedCallback(Expander.IsExpandedProperty, async (_, _) =>
         {
-            if (loaded) return;
+            if (loaded || !expander.IsExpanded) return;
             loaded = true;
             var access = await ViewModel.AccessForChannelAsync(channel.Id);
             if (access?.CanManageChannels is not true)
@@ -181,7 +183,7 @@ public sealed partial class CommunityManagementView : UserControl
                 if (!await this.ConfirmAsync($"Supprimer le salon {channel.Name} ? Cette action est définitive.")) return;
                 await ViewModel.PerformBackendAsync(client => client.DeleteChannel(channel.Id));
             }));
-        };
+        });
         return expander;
     }
 
@@ -323,9 +325,9 @@ public sealed partial class CommunityManagementView : UserControl
             InvitePanel.Children.Add(Selectable(token));
             InvitePanel.Children.Add(Action("Copier le code", () =>
             {
-                var package = new Windows.ApplicationModel.DataTransfer.DataPackage();
+                var package = new DataPackage { RequestedOperation = DataPackageOperation.Copy };
                 package.SetText(token);
-                Windows.ApplicationModel.DataTransfer.Clipboard.SetContent(package);
+                Clipboard.SetContent(package);
                 return Task.CompletedTask;
             }));
         }
@@ -469,8 +471,7 @@ public sealed partial class CommunityManagementView : UserControl
         Text = text,
         FontSize = 12,
         TextWrapping = TextWrapping.Wrap,
-        Foreground = (Microsoft.UI.Xaml.Media.Brush)Microsoft.UI.Xaml.Application.Current.FindResource(
-            "TextFillColorSecondaryBrush"),
+        Foreground = Theme.Brush("TextFillColorSecondaryBrush"),
     };
 
     private static TextBlock Selectable(string text) => new()

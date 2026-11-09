@@ -3,6 +3,7 @@ using DiscordClone.Windows.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Windows.System;
 
 namespace DiscordClone.Windows.Views;
 
@@ -33,7 +34,7 @@ public sealed partial class LoginView : UserControl
 
     private void OnPasswordKeyDown(object sender, KeyRoutedEventArgs e)
     {
-        if (e.Key == Windows.System.VirtualKey.Enter)
+        if (e.Key == VirtualKey.Enter)
         {
             e.Handled = true;
             Submit_Click();

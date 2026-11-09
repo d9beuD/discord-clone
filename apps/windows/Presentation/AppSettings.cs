@@ -40,6 +40,7 @@ public sealed class AppSettings
     {
         "light" => ElementTheme.Light,
         "dark" => ElementTheme.Dark,
-        _ => ElementTheme.Auto,
+        // ElementTheme has no Auto member; Default means "follow the application theme".
+        _ => ElementTheme.Default,
     };
 }

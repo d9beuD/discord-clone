@@ -1,10 +1,10 @@
 using System.ComponentModel;
-using DiscordClone.Windows.Presentation;
 using DiscordClone.Windows.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
 using Windows.Graphics;
 using Windows.System;
+using Windows.UI.Core;
 
 namespace DiscordClone.Windows;
 
@@ -63,7 +63,7 @@ public sealed partial class MainWindow : Window
         AppWindow.Resize(new SizeInt32(Math.Max(MinimumWidth, size.Width), Math.Max(MinimumHeight, size.Height)));
     }
 
-    private async void OnPreviewKeyDown(object sender, KeyRoutedEventArgs args)
+    private void OnPreviewKeyDown(object sender, KeyRoutedEventArgs args)
     {
         if (!KeyDown(VirtualKey.Control)) return;
 
@@ -80,25 +80,16 @@ public sealed partial class MainWindow : Window
             VirtualKey.Number9 or VirtualKey.NumberPad9 => 9,
             _ => 0,
         };
-        if (slot > 0)
+        if (slot == 0) return;
+        if (slot <= _model.Servers.Length)
         {
-            if (slot <= _model.Servers.Length)
-            {
-                _model.SelectServer(_model.Servers[slot - 1].Id);
-                args.Handled = true;
-            }
-
-            return;
-        }
-
-        if (args.Key == VirtualKey.OemComma)
-        {
+            _model.SelectServer(_model.Servers[slot - 1].Id);
             args.Handled = true;
-            await RootHost.ShowDialogAsync(new Views.SettingsView(), "Paramètres");
         }
+        // No Ctrl+, for Settings: Windows.System.VirtualKey has no OEM punctuation members, so
+        // macOS's comma shortcut has no equivalent. Settings is reachable from the rail gear.
     }
 
     private static bool KeyDown(VirtualKey key) =>
-        Microsoft.UI.Input.InputKeyboardSource.GetKeyStateForCurrentThread(key)
-            .HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down);
+        Microsoft.UI.Input.InputKeyboardSource.GetKeyStateForCurrentThread(key).HasFlag(CoreVirtualKeyStates.Down);
 }

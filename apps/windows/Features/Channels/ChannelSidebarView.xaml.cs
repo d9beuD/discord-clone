@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using DiscordClone.Bridge;
+using DiscordClone.Windows.Presentation;
 using DiscordClone.Windows.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -55,7 +56,7 @@ public sealed partial class ChannelSidebarView : UserControl
 
     private void RebuildChannels()
     {
-        var secondary = (Brush)Application.Current.FindResource("TextFillColorSecondaryBrush");
+        var secondary = Theme.Brush("TextFillColorSecondaryBrush");
         ChannelList.Items.Clear();
         foreach (var channel in ViewModel.Channels)
         {

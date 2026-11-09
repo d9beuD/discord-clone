@@ -3,14 +3,17 @@ using System.Globalization;
 using DiscordClone.Bridge;
 using DiscordClone.Windows.Presentation;
 using DiscordClone.Windows.ViewModels;
+using Microsoft.UI.Text;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Shapes;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
-using Windows.UI;
 using Windows.UI.Core;
+using BridgeUser = DiscordClone.Bridge.User;
 
 namespace DiscordClone.Windows.Views;
 
@@ -100,7 +103,7 @@ public sealed partial class ChatView : UserControl
 
         var voice = ViewModel.SelectedChannelKind == ChannelKind.Voice;
         ChannelHeader.Visibility = Visibility.Visible;
-        // The text-channel marker is a literal hash; the voice marker is the icon font glyph.
+        // The text-channel marker is a literal hash; the voice marker is the icon glyph.
         ChannelHash.Visibility = voice ? Visibility.Collapsed : Visibility.Visible;
         ChannelVolume.Visibility = voice ? Visibility.Visible : Visibility.Collapsed;
         ChannelName.Text = channel.Name;
@@ -149,10 +152,7 @@ public sealed partial class ChatView : UserControl
     private UIElement MessageRow(Message message)
     {
         var avatar = new Grid { Width = 40, Height = 40 };
-        avatar.Children.Add(new Ellipse
-        {
-            Fill = (Brush)Application.Current.FindResource("AccentFillColorDefaultBrush"),
-        });
+        avatar.Children.Add(new Ellipse { Fill = Theme.Brush("AccentFillColorDefaultBrush") });
         avatar.Children.Add(new TextBlock
         {
             Text = message.Author.Initials,
@@ -160,19 +160,8 @@ public sealed partial class ChatView : UserControl
             VerticalAlignment = VerticalAlignment.Center,
             FontSize = 12,
             FontWeight = FontWeights.SemiBold,
-            Foreground = (Brush)Application.Current.FindResource("TextOnAccentFillColorPrimaryBrush"),
+            Foreground = Theme.Brush("TextOnAccentFillColorPrimaryBrush"),
         });
-
-        var author = new Button
-        {
-            Padding = new Thickness(0),
-            BorderThickness = new Thickness(0),
-            Background = new SolidColorBrush(Colors.Transparent),
-            Tag = message.Author,
-            Content = avatar,
-        };
-        ToolTipService.SetToolTip(author, $"Profil de {message.Author.DisplayName}");
-        author.Click += OnOpenAuthor;
 
         var header = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10 };
         header.Children.Add(new TextBlock { Text = message.Author.DisplayName, FontWeight = FontWeights.SemiBold });
@@ -181,7 +170,7 @@ public sealed partial class ChatView : UserControl
             Text = Stamp(message.CreatedAtMs),
             FontSize = 11,
             VerticalAlignment = VerticalAlignment.Bottom,
-            Foreground = (Brush)Application.Current.FindResource("TextFillColorSecondaryBrush"),
+            Foreground = Theme.Brush("TextFillColorSecondaryBrush"),
         });
 
         var column = new StackPanel { Spacing = 4, MaxWidth = 620 };
@@ -199,10 +188,17 @@ public sealed partial class ChatView : UserControl
             Spacing = 12,
             Padding = new Thickness(0, 6, 0, 6),
         };
-        row.Children.Add(author);
+        row.Children.Add(avatar);
         row.Children.Add(column);
 
+        // Profile access lives in the context menu: an avatar-shaped Button would need a
+        // transparent Background override, and WinUI 3's colour constants moved namespaces.
         var menu = new MenuFlyout();
+        var profile = new MenuFlyoutItem { Text = $"Profil de {message.Author.DisplayName}" };
+        var author = message.Author;
+        profile.Click += (_, _) => _ = this.ShowDialogAsync(new ProfileView(author), author.DisplayName);
+        menu.Items.Add(profile);
+
         var copy = new MenuFlyoutItem { Text = "Copier le message" };
         copy.Click += (_, _) =>
         {
@@ -211,7 +207,9 @@ public sealed partial class ChatView : UserControl
             Clipboard.SetContent(package);
         };
         menu.Items.Add(copy);
-        if (message.Author.Id == ViewModel.CurrentUser?.Id)
+
+        BridgeUser? current = ViewModel.CurrentUser;
+        if (current is not null && message.Author.Id == current.Id)
         {
             var delete = new MenuFlyoutItem { Text = "Supprimer le message" };
             delete.Click += (_, _) => ViewModel.DeleteMessage(message);
@@ -261,11 +259,6 @@ public sealed partial class ChatView : UserControl
 
     private async void OnManage(object sender, RoutedEventArgs e) =>
         await this.ShowDialogAsync(new CommunityManagementView(), ViewModel.SelectedServer?.Name ?? "Gestion du serveur");
-
-    private void OnOpenAuthor(object sender, RoutedEventArgs e)
-    {
-        if (sender is Button { Tag: User user }) _ = this.ShowDialogAsync(new ProfileView(user), user.DisplayName);
-    }
 
     private void ScrollToBottom()
     {

@@ -67,4 +67,9 @@ public sealed partial class ServerRailView : UserControl
         if (ViewModel.CurrentUser is { } user)
             await this.ShowDialogAsync(new ProfileView(user), "Votre profil");
     }
+
+    // Replaces macOS's Cmd+, menu command: WinUI's VirtualKey enum has no comma member, so the
+    // settings surface is reachable from a visible rail button instead of a keyboard shortcut.
+    private async void OnSettings(object sender, RoutedEventArgs e) =>
+        await this.ShowDialogAsync(new SettingsView(), "Paramètres");
 }

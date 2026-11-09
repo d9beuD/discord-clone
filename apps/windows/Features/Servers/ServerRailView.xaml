@@ -46,17 +46,22 @@
       </ListView.ItemTemplate>
     </ListView>
 
-    <Button x:Name="ProfileButton" Grid.Row="2" HorizontalAlignment="Center" Click="OnOpenProfile" Visibility="Collapsed">
-      <Grid Width="36" Height="36">
-        <Ellipse Fill="{ThemeResource AccentFillColorDefaultBrush}" />
-        <TextBlock
-            x:Name="ProfileInitials"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            FontSize="12"
-            FontWeight="SemiBold"
-            Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
-      </Grid>
-    </Button>
+    <StackPanel Grid.Row="2" Spacing="6" HorizontalAlignment="Center">
+      <Button x:Name="ProfileButton" Click="OnOpenProfile" Visibility="Collapsed">
+        <Grid Width="36" Height="36">
+          <Ellipse Fill="{ThemeResource AccentFillColorDefaultBrush}" />
+          <TextBlock
+              x:Name="ProfileInitials"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center"
+              FontSize="12"
+              FontWeight="SemiBold"
+              Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
+        </Grid>
+      </Button>
+      <Button x:Name="SettingsButton" Click="OnSettings" ToolTipService.ToolTip="Paramètres">
+        <SymbolIcon Symbol="Setting" />
+      </Button>
+    </StackPanel>
   </Grid>
 </UserControl>
