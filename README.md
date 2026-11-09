@@ -44,6 +44,8 @@ The WinUI 3 app reuses the same Rust crates and the same UniFFI contract. Requir
 
 Install the C# bindings generator once. `--locked` is required: without it Cargo resolves `uniffi_bindgen` 0.32.2, which no longer matches the generator's expected API and fails to compile.
 
+The generated bindings use `[LibraryImport]` P/Invoke with `unsafe` blocks and `stackalloc`, so `apps/windows` sets `<AllowUnsafeBlocks>true</AllowUnsafeBlocks>`. Without that property the build fails with roughly 130 `CS0227` errors pointing at the generated file, not at your code.
+
 ```sh
 cargo install --locked uniffi-bindgen-cs \
   --git https://github.com/NordSecurity/uniffi-bindgen-cs --tag v0.12.0+v0.32.0

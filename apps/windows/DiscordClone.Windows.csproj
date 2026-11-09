@@ -13,6 +13,10 @@
     <UseWinUI>true</UseWinUI>
     <WindowsPackageType>None</WindowsPackageType>
     <Nullable>enable</Nullable>
+    <!-- uniffi-bindgen-cs emits LibraryImport P/Invoke with unsafe blocks and stackalloc,
+         so the consuming project must allow unsafe code. Without it the build fails with
+         hundreds of CS0227 errors from the generated bindings. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <!-- No app.manifest: WinUI 3 owns DPI awareness, and a manifest that repeats it
