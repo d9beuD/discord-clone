@@ -216,7 +216,9 @@ public sealed partial class ChatView : UserControl
             menu.Items.Add(delete);
         }
 
-        FlyoutBase.SetContextFlyout(row, menu);
+        // WinUI 3 promotes ContextFlyout to a FrameworkElement property; the UWP attached
+        // setter FlyoutBase.SetContextFlyout does not exist in this projection.
+        row.ContextFlyout = menu;
         return row;
     }
 
