@@ -1,4 +1,0 @@
-[crates.apple_bridge.bindings.swift]
-module_name = "ChatBridge"
-ffi_module_name = "ChatBridgeFFI"
-generate_immutable_records = true

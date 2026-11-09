@@ -47,7 +47,7 @@ target_settings = {
         "LIBRARY_SEARCH_PATHS": ["$(inherited)", "$(SRCROOT)/Generated/$(CONFIGURATION)"],
         "SWIFT_INCLUDE_PATHS": "$(SRCROOT)/Generated/$(CONFIGURATION)",
         "OTHER_SWIFT_FLAGS": ["$(inherited)", "-Xcc", "-fmodule-map-file=$(SRCROOT)/Generated/$(CONFIGURATION)/ChatBridgeFFI.modulemap"],
-        "OTHER_LDFLAGS": ["$(inherited)", "-lapple_bridge", "-liconv"],
+        "OTHER_LDFLAGS": ["$(inherited)", "-lchat_bridge", "-liconv"],
     },
     "DiscordCloneTests": {
         "PRODUCT_BUNDLE_IDENTIFIER": "dev.discordclone.macos.tests",
@@ -84,7 +84,7 @@ for name, folders, product_type in [
     if name == "DiscordClone":
         inputs = ["$(SRCROOT)/../../Cargo.toml", "$(SRCROOT)/../../Cargo.lock", "$(SRCROOT)/../../scripts/build-rust.sh"]
         inputs += ["$(SRCROOT)/../../" + str(path.relative_to(ROOT)) for path in sorted((ROOT / "crates").rglob("*")) if path.suffix in [".rs", ".toml"]]
-        outputs = ["$(SRCROOT)/Generated/$(CONFIGURATION)/" + path for path in ["ChatBridge.swift", "ChatBridgeFFI.h", "ChatBridgeFFI.modulemap", "libapple_bridge.a"]]
+        outputs = ["$(SRCROOT)/Generated/$(CONFIGURATION)/" + path for path in ["ChatBridge.swift", "ChatBridgeFFI.h", "ChatBridgeFFI.modulemap", "libchat_bridge.a"]]
         phases.append(add("rust:phase", "PBXShellScriptBuildPhase", buildActionMask=2147483647, files=[], inputPaths=inputs, outputPaths=outputs, name="Build Rust and generate UniFFI", shellPath="/bin/bash", shellScript='"$SRCROOT/../../scripts/build-rust.sh"\n', runOnlyForDeploymentPostprocessing=0, alwaysOutOfDate=1))
     phases.append(add(name + ":sources", "PBXSourcesBuildPhase", buildActionMask=2147483647, files=builds, runOnlyForDeploymentPostprocessing=0))
     phases.append(add(name + ":frameworks", "PBXFrameworksBuildPhase", buildActionMask=2147483647, files=[], runOnlyForDeploymentPostprocessing=0))

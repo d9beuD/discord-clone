@@ -1,4 +1,5 @@
-//! Swift-facing adapter. The domain and its infrastructure never depend on this crate.
+//! Language-facing adapter: one UniFFI contract bound to Swift and to C#. The domain and
+//! its infrastructure never depend on this crate, and it holds no platform APIs of its own.
 use chat_core as domain;
 use std::sync::Arc;
 
@@ -241,3 +242,6 @@ impl From<domain::ChatError> for ChatError {
         }
     }
 }
+
+mod backend;
+pub use backend::*;

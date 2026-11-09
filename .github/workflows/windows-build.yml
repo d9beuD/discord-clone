@@ -1,0 +1,128 @@
+name: Windows build
+
+# Purpose: produce the evidence this repository's development host cannot — a real
+# compile and link of the Rust crates and the WinUI 3 app for Windows x64.
+#
+# It proves: cargo build/test on Windows, the .cargo/config.toml crt-static link,
+# uniffi-bindgen-cs generation from the native DLL, and dotnet/WinUI XAML compilation.
+# It does NOT prove: that the app launches or looks right. WinUI 3 needs an interactive
+# desktop session, so nothing here ever runs DiscordClone.Windows.exe.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "crates/**"
+      - "apps/windows/**"
+      - "scripts/build-windows*"
+      - "scripts/check-rust.sh"
+      - ".cargo/config.toml"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - ".github/workflows/windows-build.yml"
+  pull_request:
+    paths:
+      - "crates/**"
+      - "apps/windows/**"
+      - "scripts/build-windows*"
+      - ".cargo/config.toml"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - ".github/workflows/windows-build.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-build-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  UNIFFI_BINDGEN_CS_TAG: v0.12.0+v0.32.0
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Report the host OS build
+        shell: pwsh
+        # The app floors at Windows 11 24H2 (26100). An older runner image still compiles
+        # the project, but nothing produced here could launch on it, so the number is logged.
+        run: |
+          $build = [System.Environment]::OSVersion.Version.Build
+          Write-Host "Runner OS build: $build (platform floor: 10.0.26100.0)"
+          if ($build -lt 26100) {
+            Write-Host "::warning::Runner build $build is below the 26100 floor; this run validates compilation only."
+          }
+
+      - name: Set up .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Toolchain versions
+        shell: pwsh
+        run: |
+          rustup target add x86_64-pc-windows-msvc
+          rustc --version
+          cargo --version
+          dotnet --version
+
+      - name: Cache the Cargo download cache
+        uses: actions/cache@v4
+        with:
+          # Only download caches are shared. ~/.cargo/bin is left to rustup: restoring a
+          # cached binary over rustup's own shims is how CI ends up with a broken toolchain.
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-${{ hashFiles('Cargo.lock') }}
+
+      - name: Rust checks on Windows
+        shell: bash
+        # Ordinary tests only. live_backend stays #[ignore]d and is never run here: it
+        # mutates the real backend and leaves two accounts the API cannot delete.
+        run: ./scripts/check-rust.sh
+
+      - name: Install uniffi-bindgen-cs
+        shell: pwsh
+        # --locked is mandatory: without it Cargo resolves uniffi_bindgen 0.32.2 and the
+        # generator fails to compile against that newer API.
+        run: |
+          cargo install --locked uniffi-bindgen-cs `
+            --git https://github.com/NordSecurity/uniffi-bindgen-cs `
+            --tag $env:UNIFFI_BINDGEN_CS_TAG
+
+      - name: Build the native DLL, bindings and WinUI app
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force .build | Out-Null
+          # The script fails by throwing, and pwsh turns an uncaught exception into a
+          # non-zero step, so no exit code is piped through Tee-Object here.
+          ./scripts/build-windows.ps1 -Configuration Debug *>&1 |
+            Tee-Object -FilePath .build/windows-build.log
+
+      - name: Upload the build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build-log
+          path: .build/windows-build.log
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload the built app
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          # The whole output folder: the exe is useless without the WinUI/WindowsAppSDK
+          # assemblies and chat_bridge.dll sitting beside it.
+          name: discordclone-windows-x64
+          path: apps/windows/bin
+          if-no-files-found: warn
+          retention-days: 7

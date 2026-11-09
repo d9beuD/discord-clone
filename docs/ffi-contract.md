@@ -1,6 +1,6 @@
-# Contrat Swift ↔ Rust
+# Contrat Swift / C# ↔ Rust
 
-UniFFI 0.32.2 génère `ChatBridge.swift` et le module C `ChatBridgeFFI`. La source générée est compilée dans le module applicatif `DiscordClone`. Les identifiants sont des chaînes opaques, jamais des indices de sélection ou pointeurs.
+UniFFI 0.32.2 génère `ChatBridge.swift` et le module C `ChatBridgeFFI` pour macOS, et `chat_bridge.cs` (namespace `DiscordClone.Bridge`) pour l’app WinUI 3 — un seul contrat, deux langages. La source générée est compilée dans le module applicatif `DiscordClone`. Les identifiants sont des chaînes opaques, jamais des indices de sélection ou pointeurs.
 
 ## Modèles
 
@@ -58,4 +58,35 @@ Le cache est mis à jour avant publication. Le retour de `sendMessage` et `messa
 
 ## Évolution
 
-Ce contrat est celui du cache local de la première version. Les endpoints, jetons, pagination, pièces jointes et états de synchronisation attendent l’OpenAPI et le protocole WebSocket. Les modèles métier ne portent pas de derives UniFFI : les futurs adaptateurs Swift et WinUI 3 gardent leurs propres contrats d’interop.
+Ce contrat est celui du cache local de la première version. Les endpoints, jetons, pagination, pièces jointes et états de synchronisation attendent l’OpenAPI et le protocole WebSocket. Les modèles métier ne portent pas de derives UniFFI : la crate `chat-bridge` les convertit une seule fois, et chaque langage n’ajoute que sa projection locale (Swift et C# consumant le même contrat).
+
+
+## REST backend contract
+
+`BackendClient.login(base_url, email, password)` and `.register(base_url, username, email, password)` create an independent remote session. Credentials enter Rust once; the bearer token never crosses the FFI boundary. Generated community records preserve IDs, channel kinds/positions, role masks, member assignments and invitation/override metadata. `workspace(guild_id)` also returns existing `Server`/`Channel`/`Member` presentation records and Rust-computed management capabilities.
+
+The bridge exposes the published guild/channel CRUD, member leave/kick, role CRUD/assignment, invitation create/list/revoke/accept, channel permission and override operations, authenticated profile, plus `backend_health`. `BackendError` distinguishes invalid input, HTTP status/Problem Details, transport failure, invalid response and closed session. A 401 invalidates the Rust session and returns Swift to login; other errors preserve the session and report the failed action. The UI never falls back to demo on a network failure.
+
+Unlike the local demo getters, these operations perform blocking I/O and **must run off the UI thread**. `AppViewModel` uses `Task.detached`, checks session/navigation generations before applying results, disables overlapping mutations and keeps request-bound form values outside sendable closures. `close()` is local/idempotent; `logout()` performs remote revocation then clears the token even on failure. Window/app closure calls only local `close()`; passwords/tokens are not persisted.
+
+No remote message/event API is exposed because it is absent from the currently served OpenAPI. `ChatClient` and its event subscription contract remain exclusive to the independent demo.
+
+
+## C# projection (WinUI 3)
+
+The same contract reads differently in C# because `uniffi-bindgen-cs` uses its own naming conventions; `apps/windows` is written against these generated names, not the Swift ones above.
+
+| Rust / Swift | Generated C# |
+| --- | --- |
+| `ChatClient.newDemo()` | `ChatClient.NewDemo()` (static) |
+| `try client.listMessages(channelId:) -> [Message]` | `Message[] ListMessages(string channelId)` |
+| `Server` / `BackendWorkspace` records | positional `record` with PascalCase properties, arrays for `Vec` |
+| `createdAtMs: u64` | `ulong CreatedAtMs` |
+| `Option<T>` | nullable `string?` / `long?` |
+| `throw ChatError` / `BackendError` | `ChatException` / `BackendException` with nested variant classes (`BackendException.Http.status` is a lowercase `ushort` field) |
+| `setEventListener` protocol | `ChatEventListener` interface implemented in C# |
+| object lifetime | `IDisposable`; `Dispose()` releases the Rust `Arc`, `Close()` only invalidates the session |
+
+Every FFI method is synchronous, so the C# `AppViewModel` wraps each one in `Task.Run` — equivalent to `Task.detached` — and applies results only while its session/navigation generation still matches. Events arrive on the Rust Tokio worker and hop to the UI thread through `DispatcherQueue.TryEnqueue`, carrying the subscription generation captured at registration time. Order, upsert-by-id and the "no listener holds its client" rule are unchanged.
+
+Generator quirks worth preserving: bindings are produced in `--library` mode from a host-built cdylib (so generation works on any OS), `uniffi-bindgen-cs` must be installed with `cargo install --locked`, and its config only honours a top-level `[bindings.csharp]` table plus a verbatim lowercase `access_modifier`. See [architecture](architecture.md) for details.

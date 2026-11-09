@@ -1,6 +1,9 @@
 /target/
 /.build/
 /apps/macos/Generated/
+/apps/windows/Generated/
+/apps/windows/bin/
+/apps/windows/obj/
 **/xcuserdata/
 *.xcuserstate
 .DS_Store

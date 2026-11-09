@@ -1,12 +1,12 @@
 [package]
-name = "apple-bridge"
+name = "chat-bridge"
 version = "0.1.0"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 
 [lib]
-name = "apple_bridge"
+name = "chat_bridge"
 crate-type = ["lib", "staticlib", "cdylib"]
 
 [features]

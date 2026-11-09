@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="DiscordClone.Windows.Views.ChannelSidebarView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+
+    <TextBlock
+        x:Name="ServerHeader"
+        Grid.Row="0"
+        Padding="16,20,16,12"
+        FontSize="15"
+        FontWeight="SemiBold" />
+
+    <!-- Rows are built in code: the voice marker needs the workspace channel kind, which the
+         Channel record alone does not carry. -->
+    <ListView
+        x:Name="ChannelList"
+        Grid.Row="1"
+        Padding="8,0"
+        SelectionChanged="OnSelectionChanged" />
+
+    <TextBlock
+        x:Name="Footer"
+        Grid.Row="2"
+        Padding="16"
+        FontSize="12"
+        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+  </Grid>
+</UserControl>

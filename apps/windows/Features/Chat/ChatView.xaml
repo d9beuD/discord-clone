@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="DiscordClone.Windows.Views.ChatView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+
+    <Grid
+        x:Name="ConnectionBar"
+        Grid.Row="0"
+        Padding="16"
+        Visibility="Collapsed">
+      <TextBlock x:Name="ConnectionServer" VerticalAlignment="Center" FontSize="15" FontWeight="SemiBold" />
+      <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+        <Button x:Name="RefreshButton" Content="Actualiser" Click="OnRefresh" />
+        <Button x:Name="ManageButton" Content="Gérer" Click="OnManage" />
+      </StackPanel>
+    </Grid>
+
+    <InfoBar
+        x:Name="BackendError"
+        Grid.Row="1"
+        Margin="16,0"
+        IsClosable="False"
+        IsOpen="False"
+        Message=""
+        Severity="Error" />
+
+    <Grid x:Name="ChannelHeader" Grid.Row="2" Padding="24,18" Visibility="Collapsed">
+      <StackPanel Orientation="Horizontal" Spacing="12">
+        <TextBlock x:Name="ChannelHash" Text="#" FontSize="22" VerticalAlignment="Center" />
+        <SymbolIcon x:Name="ChannelVolume" Symbol="Volume" VerticalAlignment="Center" Visibility="Collapsed" />
+        <StackPanel Spacing="2">
+          <TextBlock x:Name="ChannelName" FontSize="15" FontWeight="SemiBold" />
+          <TextBlock
+              x:Name="ChannelTopic"
+              FontSize="12"
+              Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+              MaxLines="1"
+              TextTrimming="CharacterEllipsis" />
+        </StackPanel>
+      </StackPanel>
+    </Grid>
+
+    <InfoBar
+        x:Name="DemoError"
+        Grid.Row="3"
+        Margin="16"
+        VerticalAlignment="Top"
+        IsClosable="False"
+        IsOpen="False"
+        Message=""
+        Severity="Warning">
+      <InfoBar.ActionButton>
+        <Button x:Name="RetryButton" Content="Réessayer" Click="OnRetry" />
+      </InfoBar.ActionButton>
+    </InfoBar>
+
+    <StackPanel x:Name="EmptyState" Grid.Row="3" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="6">
+      <TextBlock x:Name="EmptyTitle" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center" />
+      <TextBlock
+          x:Name="EmptyBody"
+          Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+          HorizontalAlignment="Center"
+          TextWrapping="Wrap" />
+    </StackPanel>
+
+    <!-- Rows are built in code-behind: each one carries its own context flyout, which needs the
+         concrete message identity rather than a templated binding. -->
+    <ListView
+        x:Name="MessageList"
+        Grid.Row="3"
+        Padding="26,12,26,0"
+        SelectionMode="None"
+        IsSwipeEnabled="False" />
+
+    <StackPanel
+        x:Name="Composer"
+        Grid.Row="4"
+        Padding="20,8,20,16"
+        Spacing="8"
+        Visibility="Collapsed">
+      <Grid ColumnSpacing="10">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <TextBox
+            x:Name="Draft"
+            Grid.Column="0"
+            AcceptsReturn="True"
+            MaxHeight="120"
+            TextWrapping="Wrap"
+            PreviewKeyDown="OnDraftKeyDown"
+            TextChanged="OnDraftChanged" />
+        <Button
+            x:Name="SendButton"
+            Grid.Column="1"
+            Width="36"
+            Height="36"
+            VerticalAlignment="Bottom"
+            Content="↑"
+            Click="OnSend"
+            ToolTipService.ToolTip="Envoyer (Entrée)" />
+      </Grid>
+      <Grid>
+        <TextBlock
+            Text="Entrée pour envoyer · Maj+Entrée pour une nouvelle ligne"
+            FontSize="11"
+            Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+        <TextBlock
+            Text="Démo locale"
+            FontSize="11"
+            HorizontalAlignment="Right"
+            Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+      </Grid>
+    </StackPanel>
+  </Grid>
+</UserControl>

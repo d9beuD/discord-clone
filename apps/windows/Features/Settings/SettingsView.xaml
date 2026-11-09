@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="DiscordClone.Windows.Views.SettingsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <StackPanel Width="420" Spacing="16" Padding="4,8">
+    <TextBlock Text="Apparence" FontSize="15" FontWeight="SemiBold" />
+    <StackPanel Orientation="Horizontal" Spacing="12">
+      <RadioButton x:Name="ThemeSystem" Content="Système" GroupName="theme" Checked="OnThemeChanged" />
+      <RadioButton x:Name="ThemeLight" Content="Clair" GroupName="theme" Checked="OnThemeChanged" />
+      <RadioButton x:Name="ThemeDark" Content="Sombre" GroupName="theme" Checked="OnThemeChanged" />
+    </StackPanel>
+
+    <TextBlock Text="Compte" FontSize="15" FontWeight="SemiBold" Margin="0,8,0,0" />
+    <TextBlock x:Name="ProfileLine" FontSize="13" />
+    <TextBlock x:Name="SessionLine" FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+    <Button
+        x:Name="LogoutButton"
+        Content="Se déconnecter"
+        Click="OnLogout"
+        Visibility="Collapsed"
+        Margin="0,4,0,0" />
+
+    <TextBlock Text="À propos" FontSize="15" FontWeight="SemiBold" Margin="0,8,0,0" />
+    <TextBlock Text="Discord Clone · 0.1.0" FontSize="13" />
+    <TextBlock
+        Text="Interface native Windows · cœur Rust&#x0a;Les conversations de démonstration restent en mémoire et sont réinitialisées à la fermeture de la session."
+        FontSize="12"
+        TextWrapping="Wrap"
+        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+  </StackPanel>
+</UserControl>

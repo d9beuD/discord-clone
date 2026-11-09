@@ -26,7 +26,7 @@ Scope: build and exercise the macOS demo through the real Rust bridge while pres
   EVIDENCE: Native light workspace/profile and dark settings inspected via CUA. Return, Shift+Return, members shortcut and settings shortcut exercised on AZERTY. Native offscreen previews in .build/previews reviewed at 1180 and 900 points; compact layout hides members and retains readable messages/editor. Offscreen vibrancy/selection differs from the onscreen compositor, as documented in README.
 
 - [x] G6: Documentation explains build, memory-only demo, FFI lifecycle and future Windows adapter
-  EVIDENCE: README.md, docs/architecture.md and docs/ffi-contract.md reviewed against the implementation. Portable crates have no UniFFI/Swift/AppKit dependency; only apple-bridge maps FFI types. Both Xcode configurations build; binding version is pinned and Cargo.lock is present.
+  EVIDENCE: README.md, docs/architecture.md and docs/ffi-contract.md reviewed against the implementation. Portable crates have no UniFFI/Swift/AppKit dependency; only the shared bridge crate (formerly `apple-bridge`, now `chat-bridge`) maps FFI types. Both Xcode configurations build; binding version is pinned and Cargo.lock is present.
 
 - [x] G4M: Native interactive demo is exercised through computer use
   EVIDENCE: CUA verified login/demo, empty salon, multiline input, restored per-channel draft, Return send, copy/paste, deletion returning to an empty salon, profile, member toggle and settings appearance. App was restarted after checks and left on the initial demo salon with the original system appearance preference restored. Session closure/reset is covered by Rust and Swift tests.

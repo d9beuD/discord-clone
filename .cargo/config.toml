@@ -1,0 +1,4 @@
+# The WinUI 3 app loads chat_bridge.dll from its own directory with no VC++ redist install,
+# so the MSVC build links the CRT statically.
+[target.x86_64-pc-windows-msvc]
+rustflags = ["-C", "target-feature=+crt-static"]

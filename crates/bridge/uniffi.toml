@@ -1,0 +1,14 @@
+[crates.chat_bridge.bindings.swift]
+module_name = "ChatBridge"
+ffi_module_name = "ChatBridgeFFI"
+generate_immutable_records = true
+
+# uniffi-bindgen-cs reads only the top-level language table and ignores the
+# [crates.<name>.bindings.*] overrides the Swift generator honours, so C# settings
+# cannot be nested here.
+[bindings.csharp]
+cdylib_name = "chat_bridge"
+namespace = "DiscordClone.Bridge"
+global_methods_class_name = "ChatBridgeMethods"
+# The generator inserts this string verbatim, so it must be the lowercase C# keyword.
+access_modifier = "public"

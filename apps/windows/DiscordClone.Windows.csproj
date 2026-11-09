@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <!-- Windows 11 24H2 floor: real Mica (not the sub-22000 solid fallback), Segoe Fluent
+         Icons, and 24H2-era WinRT APIs usable without ApiInformation guards. -->
+    <TargetFramework>net9.0-windows10.0.26100.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.26100.0</TargetPlatformMinVersion>
+    <RootNamespace>DiscordClone.Windows</RootNamespace>
+    <AssemblyName>DiscordClone.Windows</AssemblyName>
+    <Platforms>x64</Platforms>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <UseWinUI>true</UseWinUI>
+    <WindowsPackageType>None</WindowsPackageType>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- No app.manifest: WinUI 3 owns DPI awareness, and a manifest that repeats it
+         is a launch-time scaling conflict that cannot be exercised off Windows. -->
+    <Version>0.1.0</Version>
+    <Product>Discord Clone</Product>
+    <SatelliteResourceLanguages>fr</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- 1.8 reached end of servicing 2026-09-24; 2.6.5 is the Current stable release.
+         2.x is a semver major, so this jump is where 2.1.3 drag-region defaults and the
+         2.6.5 content-island backdrop revert would surface if this app used either. -->
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.6.5" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.9457" />
+  </ItemGroup>
+
+  <!-- apps/windows/Generated/chat_bridge.cs is picked up by the default compile glob.
+       Regenerate it with scripts/build-windows.sh (any host) or build-windows.ps1 (Windows). -->
+
+</Project>
