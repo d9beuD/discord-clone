@@ -2,6 +2,8 @@ using System.ComponentModel;
 using DiscordClone.Windows.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
+using Windows.System;
 
 namespace DiscordClone.Windows.Views;
 
@@ -15,9 +17,26 @@ public sealed partial class WorkspaceView : UserControl
     public WorkspaceView()
     {
         InitializeComponent();
+        AddAccelerators();
         _model.PropertyChanged += OnModelChanged;
         Loaded += (_, _) => ApplyPanes();
         ApplyPanes();
+    }
+
+    /// The WinUI 3 markup compiler refuses comma-separated VirtualKeyModifiers text, so the
+    /// Ctrl+Alt+S and Ctrl+Shift+M combinations from the macOS menu are assembled in code.
+    private void AddAccelerators()
+    {
+        SidebarToggle.KeyboardAccelerators.Add(new KeyboardAccelerator
+        {
+            Key = VirtualKey.S,
+            Modifiers = VirtualKeyModifiers.Control | VirtualKeyModifiers.Alt,
+        });
+        MembersToggle.KeyboardAccelerators.Add(new KeyboardAccelerator
+        {
+            Key = VirtualKey.M,
+            Modifiers = VirtualKeyModifiers.Control | VirtualKeyModifiers.Shift,
+        });
     }
 
     private void OnModelChanged(object? sender, PropertyChangedEventArgs args)
@@ -42,8 +61,6 @@ public sealed partial class WorkspaceView : UserControl
         var sidebar = _model.ShowSidebar;
         SidebarColumn.MinWidth = sidebar ? 240 : 0;
         SidebarColumn.Width = new GridLength(sidebar ? SidebarWidth : 0);
-        SidebarSplitColumn.Width = new GridLength(sidebar ? 1 : 0);
-        SidebarSplitter.Visibility = sidebar ? Visibility.Visible : Visibility.Collapsed;
         SidebarPane.Visibility = sidebar ? Visibility.Visible : Visibility.Collapsed;
 
         var members = _model.ShowMembers;

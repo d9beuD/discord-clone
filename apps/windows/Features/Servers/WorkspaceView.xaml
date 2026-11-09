@@ -13,16 +13,8 @@
 
     <Grid Grid.Row="0" Padding="12,8" BorderThickness="0,0,0,1" BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}">
       <StackPanel Orientation="Horizontal" Spacing="8">
-        <Button x:Name="SidebarToggle" Content="Masquer la barre latérale" Click="OnToggleSidebar">
-          <Button.KeyboardAccelerators>
-            <KeyboardAccelerator Modifiers="Control,Alt" Key="S" />
-          </Button.KeyboardAccelerators>
-        </Button>
-        <Button x:Name="MembersToggle" Content="Masquer les membres" Click="OnToggleMembers">
-          <Button.KeyboardAccelerators>
-            <KeyboardAccelerator Modifiers="Control,Shift" Key="M" />
-          </Button.KeyboardAccelerators>
-        </Button>
+        <Button x:Name="SidebarToggle" Content="Masquer la barre latérale" Click="OnToggleSidebar" />
+        <Button x:Name="MembersToggle" Content="Masquer les membres" Click="OnToggleMembers" />
       </StackPanel>
       <TextBlock
           x:Name="StatusLabel"
@@ -31,14 +23,16 @@
           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
     </Grid>
 
+    <!-- No GridSplitter: that type is UWP-only and absent from WinUI 3, so panes are
+         fixed-width and only collapse. Accelerators are set in code-behind because the
+         WinUI 3 markup compiler rejects comma-separated VirtualKeyModifiers text. -->
     <Grid Grid.Row="1">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="80" />
         <ColumnDefinition x:Name="SidebarColumn" Width="280" MinWidth="240" MaxWidth="400" />
-        <ColumnDefinition x:Name="SidebarSplitColumn" Width="1" />
         <ColumnDefinition Width="*" MinWidth="360" />
         <ColumnDefinition x:Name="InspectorColumn" Width="260" MinWidth="220" MaxWidth="360" />
-    </Grid.ColumnDefinitions>
+      </Grid.ColumnDefinitions>
 
       <views:ServerRailView Grid.Column="0" Background="{ThemeResource LayerFillColorDefaultBrush}" />
 
@@ -46,19 +40,12 @@
           x:Name="SidebarPane"
           Grid.Column="1"
           Background="{ThemeResource LayerFillColorDefaultBrush}" />
-      <GridSplitter
-          x:Name="SidebarSplitter"
-          Grid.Column="2"
-          Width="1"
-          HorizontalAlignment="Stretch"
-          VerticalAlignment="Stretch"
-          Background="{ThemeResource DividerStrokeColorDefaultBrush}" />
 
-      <views:ChatView Grid.Column="3" />
+      <views:ChatView Grid.Column="2" />
 
       <views:MemberSidebarView
           x:Name="InspectorPane"
-          Grid.Column="4"
+          Grid.Column="3"
           Background="{ThemeResource LayerFillColorDefaultBrush}" />
     </Grid>
   </Grid>

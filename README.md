@@ -64,7 +64,7 @@ On Windows, build the native DLL and the app together:
 
 The script copies `chat_bridge.dll` next to `DiscordClone.Windows.exe` because the generated bindings P/Invoke that library by name. The app is unpackaged (`WindowsPackageType = None`), so it runs without dev mode, MSIX, or a certificate, and `.cargo/config.toml` links the CRT statically so no VC++ redistributable is needed.
 
-**Status:** the project is delivered as source. It has not been restored, compiled, or launched: WinUI 3 builds only on Windows, and the development machine used so far has neither a .NET SDK nor a Windows host. See [Verification](#verification).
+**Status:** the app has never been launched or visually reviewed — WinUI 3 needs an interactive Windows session, and this repository's development machine is a Mac without a .NET SDK. CI does compile it; see [Verification](#verification).
 
 ## Connect to the backend
 
@@ -156,7 +156,9 @@ The verification scripts cover formatting, Clippy, portable domain and HTTP fixt
 
 Swift tests also produce light, dark, and compact offscreen previews in `.build/previews/`. Offscreen rendering does not always reproduce macOS composited materials and selection highlights accurately.
 
-The Windows side is verified only as far as a macOS host allows, and `check-windows.sh` says so instead of passing silently: the C# bindings are really generated from the compiled library, and `chat-core` plus `chat-storage` type-check for `x86_64-pc-windows-msvc`. `chat-networking` and `chat-bridge` cannot be cross-checked here because `ring`, reached through reqwest → rustls, compiles C for the target and needs the Windows SDK (`cargo-xwin`) — which is not installed. The WinUI 3 project has not been restored, compiled, or launched on any machine; its XAML and interop assumptions are unverified until `build-windows.ps1` runs on Windows. It now also jumps two SDK majors (1.8 → 2.6.5) and raises the OS floor to 24H2 in the same step, so the first build is expected to surface both ordinary XAML mistakes and Windows App SDK 2.x breaking changes (for example the 2.1.3 title-bar drag-region defaults).
+The Windows side is verified only as far as a macOS host allows, and `check-windows.sh` says so instead of passing silently: the C# bindings are really generated from the compiled library, and `chat-core` plus `chat-storage` type-check for `x86_64-pc-windows-msvc`. `chat-networking` and `chat-bridge` cannot be cross-checked here because `ring`, reached through reqwest → rustls, compiles C for the target and needs the Windows SDK (`cargo-xwin`) — which is not installed.
+
+The CI job closes exactly that gap: on Windows it builds and tests every crate, links `chat_bridge.dll` with the static CRT, generates the bindings from that DLL, and restores Windows App SDK 2.6.5 under `net9.0-windows10.0.26100.0` — all of which succeeded on the first run. That same run rejected two assumptions I could not test locally (`GridSplitter` is UWP-only, and comma-separated `KeyboardAccelerator.Modifiers` text does not parse), both now fixed. Still unproven: the C# compilation itself, the app launching, and how Mica, dialogs and the layout actually render — those need an interactive Windows 11 24H2 session.
 
 UI tests require an unlocked macOS graphical session and the automation permissions requested by Xcode. XCTest results and screenshots are stored in `.build/macos/Logs/Test/`. On the development machine, the UI runner times out before executing its scenarios (`Timed out while enabling automation mode`). Native interactions were checked separately; the automated UI suite still needs execution on a working automation host. `verify.sh` reports this failure instead of hiding it.
 
