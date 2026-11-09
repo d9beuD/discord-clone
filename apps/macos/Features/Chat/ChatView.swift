@@ -6,9 +6,28 @@ struct ChatView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            if model.isConnected {
+                HStack {
+                    Text(model.selectedServer?.name ?? "Vos serveurs").font(.headline)
+                    Spacer()
+                    Button("Actualiser", systemImage: "arrow.clockwise") { Task { await model.refreshBackend() } }
+                    if model.workspace != nil {
+                        Button("Gérer", systemImage: "slider.horizontal.3") { model.showManagement = true }
+                            .accessibilityIdentifier("workspace.manage")
+                    }
+                }
+                .buttonStyle(.borderless)
+                .disabled(model.isWorking)
+                .padding(16)
+                Divider()
+                if let error = model.errorMessage {
+                    Label(error, systemImage: "exclamationmark.triangle")
+                        .font(.callout).foregroundStyle(.red).textSelection(.enabled).padding(12)
+                }
+            }
             if let channel = model.selectedChannel {
                 HStack(spacing: 12) {
-                    Image(systemName: "number").font(.title2).foregroundStyle(.secondary)
+                    Image(systemName: model.workspace?.remoteChannels.first(where: { $0.id == channel.id })?.kind == .voice ? "speaker.wave.2" : "number").font(.title2).foregroundStyle(.secondary)
                     VStack(alignment: .leading, spacing: 4) {
                         Text(channel.name).font(.headline)
                         Text(channel.topic).font(.caption).foregroundStyle(.secondary).lineLimit(1)
@@ -19,7 +38,7 @@ struct ChatView: View {
                 .padding(.vertical, 18)
                 .accessibilityIdentifier("chat.header")
                 Divider()
-                if let error = model.errorMessage {
+                if !model.isConnected, let error = model.errorMessage {
                     HStack {
                         Label(error, systemImage: "exclamationmark.triangle")
                             .font(.callout)
@@ -30,10 +49,19 @@ struct ChatView: View {
                     .background(.orange.opacity(0.1))
                     .accessibilityIdentifier("chat.error")
                 }
-                conversation(channel: channel)
-                ComposerView()
+                if model.isConnected {
+                    ContentUnavailableView(
+                        model.workspace?.remoteChannels.first(where: { $0.id == channel.id })?.kind == .voice ? "Salon vocal" : "Salon texte",
+                        systemImage: model.workspace?.remoteChannels.first(where: { $0.id == channel.id })?.kind == .voice ? "speaker.wave.2" : "bubble.left.and.bubble.right",
+                        description: Text("Le backend connecté ne propose pas encore les conversations ni les appels. Vous pouvez gérer ce salon et ses permissions."))
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    conversation(channel: channel)
+                    ComposerView()
+                }
             } else {
-                ContentUnavailableView("Choisissez un salon", systemImage: "bubble.left.and.bubble.right", description: Text("Vos conversations apparaîtront ici."))
+                ContentUnavailableView("Choisissez un salon", systemImage: "bubble.left.and.bubble.right", description: Text(model.isConnected ? "Créez ou rejoignez un serveur, puis choisissez un salon." : "Vos conversations apparaîtront ici."))
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
         .background(Color(nsColor: .textBackgroundColor))

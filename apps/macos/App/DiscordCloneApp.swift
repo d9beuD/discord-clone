@@ -32,7 +32,7 @@ struct DiscordCloneApp: App {
                     model.showSidebar.toggle()
                 }
                 .keyboardShortcut("s", modifiers: [.command, .control])
-                .disabled(!model.isDemoOpen)
+                .disabled(!model.isSessionOpen)
             }
             CommandMenu("Serveurs") {
                 ForEach(Array(model.servers.enumerated()), id: \.element.id) { index, server in
@@ -45,7 +45,7 @@ struct DiscordCloneApp: App {
                     model.showMembers.toggle()
                 }
                 .keyboardShortcut("m", modifiers: [.command, .shift])
-                .disabled(!model.isDemoOpen)
+                .disabled(!model.isSessionOpen)
             }
         }
 
@@ -73,7 +73,7 @@ private struct RootView: View {
 
     var body: some View {
         Group {
-            if model.isDemoOpen {
+            if model.isSessionOpen {
                 WorkspaceView()
             } else {
                 LoginView()

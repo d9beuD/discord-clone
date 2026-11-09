@@ -16,9 +16,9 @@ struct SettingsView: View {
             }
             Section("Compte") {
                 LabeledContent("Profil", value: model.currentUser?.displayName ?? "Non connecté")
-                LabeledContent("Session", value: model.isDemoOpen ? "Démonstration locale" : "Aucune")
-                if model.isDemoOpen {
-                    Button("Fermer la session démo", role: .destructive) { model.closeSession() }
+                LabeledContent("Session", value: model.isConnected ? "Backend" : model.isDemoOpen ? "Démonstration locale" : "Aucune")
+                if model.isSessionOpen {
+                    Button(model.isConnected ? "Se déconnecter" : "Fermer la session démo", role: .destructive) { Task { await model.logout() } }
                         .accessibilityIdentifier("settings.logout")
                 }
             }

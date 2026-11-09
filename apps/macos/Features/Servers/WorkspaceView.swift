@@ -9,6 +9,8 @@ struct WorkspaceView: View {
         @Bindable var model = model
         NativeWorkspace(model: model, showSidebar: $model.showSidebar, showMembers: $model.showMembers, openSettings: { openSettings() })
         .ignoresSafeArea(.container, edges: .top)
+        .sheet(isPresented: $model.showManagement) { CommunityManagementView().environment(model) }
+        .sheet(isPresented: $model.showJoinServer) { JoinServerView().environment(model) }
         .sheet(isPresented: Binding(
             get: { model.profile != nil },
             set: { if !$0 { model.profile = nil } }
@@ -49,6 +51,15 @@ struct ServerSidebar: View {
         .contentMargins(.horizontal, 8, for: .scrollContent)
         .accessibilityLabel("Serveurs")
         .accessibilityIdentifier("navigation.servers")
+        .safeAreaInset(edge: .top, spacing: 0) {
+            if model.isConnected {
+                Button { model.showJoinServer = true } label: { Image(systemName: "plus.circle").font(.title2).padding(12) }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Créer ou rejoindre un serveur")
+                    .accessibilityIdentifier("workspace.addServer")
+                    .disabled(model.isWorking)
+            }
+        }
         .safeAreaInset(edge: .bottom, spacing: 0) {
             if let user = model.currentUser {
                 Button { model.profile = user } label: {

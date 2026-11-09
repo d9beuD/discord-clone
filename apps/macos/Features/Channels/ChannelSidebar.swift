@@ -10,7 +10,7 @@ struct ChannelSidebar: View {
         )) {
             Section(model.selectedServer?.name ?? "Salons") {
                 ForEach(model.channels, id: \.id) { channel in
-                    Label(channel.name, systemImage: "number")
+                    Label(channel.name, systemImage: model.workspace?.remoteChannels.first(where: { $0.id == channel.id })?.kind == .voice ? "speaker.wave.2" : "number")
                         .tag(channel.id)
                         .accessibilityIdentifier("channel.\(channel.id)")
                 }
@@ -20,7 +20,7 @@ struct ChannelSidebar: View {
         .accessibilityLabel("Salons du serveur")
         .accessibilityIdentifier("navigation.channels")
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            Label("Conversations locales", systemImage: "internaldrive")
+            Label(model.isConnected ? "Connecté au backend" : "Conversations locales", systemImage: model.isConnected ? "network" : "internaldrive")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .padding(16)

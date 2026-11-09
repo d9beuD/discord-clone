@@ -299,3 +299,5 @@ impl Drop for ChatService {
         self.close();
     }
 }
+
+pub mod community;

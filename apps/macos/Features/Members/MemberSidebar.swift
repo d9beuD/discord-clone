@@ -15,8 +15,11 @@ struct MemberSidebar: View {
             .padding(20)
             Divider()
             Form {
-                memberGroup("En ligne", online: true)
-                memberGroup("Hors ligne", online: false)
+                if model.isConnected { memberGroup("Membres", online: false) }
+                else {
+                    memberGroup("En ligne", online: true)
+                    memberGroup("Hors ligne", online: false)
+                }
             }
             .formStyle(.grouped)
         }
@@ -32,9 +35,9 @@ struct MemberSidebar: View {
                     HStack(spacing: 10) {
                         AvatarView(user: member.user, size: 32)
                             .overlay(alignment: .bottomTrailing) {
-                                Circle().fill(online ? Color.green : Color.secondary)
+                                if !model.isConnected { Circle().fill(online ? Color.green : Color.secondary)
                                     .frame(width: 9, height: 9)
-                                    .overlay(Circle().stroke(.background, lineWidth: 2))
+                                    .overlay(Circle().stroke(.background, lineWidth: 2)) }
                             }
                         VStack(alignment: .leading, spacing: 3) {
                             Text(member.user.displayName).font(.callout.weight(.medium))
@@ -45,7 +48,7 @@ struct MemberSidebar: View {
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("\(member.user.displayName), \(member.role), \(online ? "en ligne" : "hors ligne")")
+                .accessibilityLabel("\(member.user.displayName), \(member.role), \(model.isConnected ? "membre" : online ? "en ligne" : "hors ligne")")
                 .accessibilityIdentifier("member.\(member.user.id)")
             }
         }
@@ -55,6 +58,7 @@ struct MemberSidebar: View {
 struct ProfileView: View {
     let user: User
     @Environment(\.dismiss) private var dismiss
+    @Environment(AppViewModel.self) private var model
 
     var body: some View {
         VStack(spacing: 18) {
@@ -63,7 +67,7 @@ struct ProfileView: View {
                 .accessibilityIdentifier("profile.name")
             Text(user.bio).foregroundStyle(.secondary).multilineTextAlignment(.center)
             Divider()
-            Label("Profil de démonstration", systemImage: "circle.dotted")
+            Label(model.isConnected ? "Profil du serveur" : "Profil de démonstration", systemImage: "person.crop.circle")
                 .font(.caption).foregroundStyle(.secondary)
             Button("Fermer") { dismiss() }
                 .keyboardShortcut(.cancelAction)

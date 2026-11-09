@@ -11,6 +11,7 @@ struct NativeWorkspace: NSViewControllerRepresentable {
     func makeNSViewController(context: Context) -> WorkspaceSplitController {
         let controller = WorkspaceSplitController()
         controller.openSettings = openSettings
+        controller.isConnected = model.isConnected
         let sidebar = NSHostingController(rootView: HStack(spacing: 0) {
             ServerSidebar().frame(width: 80)
             Divider()
@@ -53,12 +54,20 @@ struct NativeWorkspace: NSViewControllerRepresentable {
     }
 
     func updateNSViewController(_ controller: WorkspaceSplitController, context: Context) {
+        controller.isConnected = model.isConnected
         controller.setPresentation(sidebar: showSidebar, members: showMembers)
     }
 }
 
 final class WorkspaceSplitController: NSSplitViewController, NSToolbarDelegate {
     var openSettings: (() -> Void)?
+    private let sessionLabel = NSTextField(labelWithString: "Mode démo")
+    var isConnected = false {
+        didSet {
+            sessionLabel.stringValue = isConnected ? "Connecté au backend" : "Mode démo"
+            sessionLabel.toolTip = isConnected ? "Les données sont conservées sur le backend." : "Les messages restent en mémoire jusqu’à la fermeture de la session."
+        }
+    }
     private weak var toolbarWindow: NSWindow?
     private let nativeToolbar = NSToolbar(identifier: "workspace")
     private static let sidebarItem = NSToolbarItem.Identifier("workspace.sidebar-toggle")
@@ -106,12 +115,11 @@ final class WorkspaceSplitController: NSSplitViewController, NSToolbarDelegate {
             item.view = button
             configureToggle(button, index: sidebar ? 0 : 2)
         } else if id == Self.demoItem {
-            let label = NSTextField(labelWithString: "Mode démo")
+            let label = sessionLabel
             label.font = .systemFont(ofSize: NSFont.smallSystemFontSize)
             label.textColor = .secondaryLabelColor
-            label.toolTip = "Les messages restent en mémoire jusqu’à la fermeture de la session."
             item.view = label
-            item.label = "Mode démo"
+            item.label = sessionLabel.stringValue
         } else if id == Self.settingsItem {
             item.label = "Paramètres"
             let button = NSButton(image: NSImage(systemSymbolName: "gearshape", accessibilityDescription: "Paramètres")!,
